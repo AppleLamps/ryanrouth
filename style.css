@@ -793,6 +793,25 @@ body {
         top: -45px;
     }
     
+    /* Fix overlapping issue with action buttons */
+    .profile-actions {
+        margin-left: 110px; /* Profile image width (90px) + gap (20px) */
+        gap: 6px;
+        padding: 8px 0;
+    }
+    
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+    }
+    
+    .follow-btn {
+        height: 32px;
+        padding: 0 16px;
+        font-size: 14px;
+    }
+    
     .profile-info h2 {
         font-size: 16px;
         line-height: 20px;
