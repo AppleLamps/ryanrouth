@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryan Routh (@RyanRouth) / X</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+</head>
+<body>
+    <div class="profile-section">
+        <div class="banner-image">
+            <img src="banner.png" alt="Ryan Routh Banner" />
+        </div>
+        <div class="profile-header">
+            <div class="profile-image-wrapper">
+                <div class="profile-image">
+                    <img src="profile.png" alt="Ryan Routh Profile" />
+                </div>
+            </div>
+            <div class="profile-actions">
+                <button class="action-btn more"><span class="material-symbols-outlined">more_horiz</span></button>
+                <button class="action-btn email"><span class="material-symbols-outlined">mail</span></button>
+                <button class="action-btn notify"><span class="material-symbols-outlined">notifications</span></button>
+                <button class="follow-btn">Following</button>
+            </div>
+            <div class="profile-info">
+                <h2>Ryan Routh <span class="verified">✓</span></h2>
+                <p class="handle">@RyanRouth</p>
+                <p class="bio">Ryan Wesley Routh is accused of planning and attempting an assassination of Donald Trump at a golf course in September 2024. His plan was stopped by Secret Service before any shots were fired. He now faces serious federal and state charges and pled not guilty. His self-representation in federal court culminates in a trial scheduled for September 8, 2025.</p>
+                <div class="profile-meta">
+                    <span class="location">📍 Hawaii</span>
+                    <span class="joined">📅 Joined March 2011</span>
+                </div>
+                <div class="profile-stats">
+                    <span><strong>509</strong> Posts</span>
+                    <span><strong>10K+</strong> Followers</span>
+                </div>
+            </div>
+        </div>
+        <nav class="profile-nav">
+            <a href="#" class="nav-link active" data-tab="posts">Posts</a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <!-- Posts Tab Content -->
+        <div class="tab-content" id="posts-tab" style="display: block;">
+            <div class="search-section" id="search-section">
+                <div class="search-container">
+                    <div id="post-count" class="post-count"></div>
+                    <div class="search-input-wrapper">
+                        <span class="material-symbols-outlined search-icon">search</span>
+                        <input type="text" id="search-input" class="search-input" placeholder="Search posts (try: 'rent freeze', 'childcare', 'buses')..." />
+                        <button id="clear-search" class="clear-button">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                        <button id="search-help" class="search-help-button" title="Search Help">
+                            <span class="material-symbols-outlined">help</span>
+                        </button>
+                    </div>
+                    <div class="search-help-panel" id="search-help-panel">
+                        <div class="search-help-content">
+                            <h4>Enhanced Search Features</h4>
+                            <ul>
+                                <li><strong>Match All Words:</strong> All words must be found (AND logic)</li>
+                                <li><strong>Partial Matching:</strong> "child" matches "childcare"</li>
+                                <li><strong>Word Variations:</strong> "running" matches "run", "ran" (stemming)</li>
+                                <li><strong>Search All Fields:</strong> Text, username, and other post data</li>
+                                <li><strong>Smart Highlighting:</strong> All matches highlighted</li>
+                                <li><strong>Exact Matching:</strong> Precise results without fuzzy approximations</li>
+                            </ul>
+                            <p><em>Stopwords like "the", "and", "of" are automatically ignored.</em></p>
+                        </div>
+                    </div>
+                    <div class="date-filter-section">
+                        <div class="date-filter-header">
+                            <span class="material-symbols-outlined">date_range</span>
+                            <span>Filter by date</span>
+                            <button id="toggle-date-filter" class="toggle-button">
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </button>
+                        </div>
+                        <div class="date-filter-controls" id="date-filter-controls">
+                            <div class="date-inputs">
+                                <div class="date-input-group">
+                                    <label for="start-date">From:</label>
+                                    <input type="date" id="start-date" class="date-input" />
+                                </div>
+                                <div class="date-input-group">
+                                    <label for="end-date">To:</label>
+                                    <input type="date" id="end-date" class="date-input" />
+                                </div>
+                            </div>
+                            <div class="date-filter-actions">
+                                <button id="apply-date-filter" class="apply-filter-btn">Apply Filter</button>
+                                <button id="clear-date-filter" class="clear-filter-btn">Clear</button>
+                            </div>
+                            <div class="date-presets">
+                                <button class="preset-btn" data-days="7">Last 7 days</button>
+                                <button class="preset-btn" data-days="30">Last 30 days</button>
+                                <button class="preset-btn" data-days="90">Last 3 months</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="search-results-count" id="search-results"></div>
+                </div>
+            </div>
+
+            <div class="loading-spinner" id="loading">
+                <div class="spinner"></div>
+                <p>Loading posts...</p>
+            </div>
+            
+            <div class="posts-grid" id="posts-container">
+                <!-- Posts will be dynamically inserted here -->
+            </div>
+            
+            <div class="infinite-loading" id="infinite-loading">
+                <div class="spinner-small"></div>
+                <p>Loading more posts...</p>
+            </div>
+            
+            <div class="empty-state" id="empty-state">
+                <span class="material-symbols-outlined">inbox</span>
+                <h2>No posts found</h2>
+                <p>There are no posts to display at the moment.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 Ryan Routh's Social Media Posts. Designed with ♥</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
