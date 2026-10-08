@@ -24,6 +24,8 @@ let filteredPosts = [];
 let currentSearchTerm = '';
 let currentStartDate = null;
 let currentEndDate = null;
+// Date filter as applied, in the YYYY-MM-DD form shown in the inputs (used for export)
+let currentDateFilterLabels = { from: null, to: null };
 let observer;
 const POSTS_PER_PAGE = 25;
 let currentPage = 0;
@@ -597,6 +599,7 @@ function handleDateFilter() {
     
     currentStartDate = startDate ? new Date(startDate) : null;
     currentEndDate = endDate ? new Date(endDate + 'T23:59:59') : null; // End of day
+    currentDateFilterLabels = { from: startDate || null, to: endDate || null };
     
     applyFilters();
     updatePostCount();
@@ -610,6 +613,7 @@ function clearDateFilters() {
     endDateInput.value = '';
     currentStartDate = null;
     currentEndDate = null;
+    currentDateFilterLabels = { from: null, to: null };
     
     // Remove active class from preset buttons
     presetButtons.forEach(btn => btn.classList.remove('active'));
@@ -633,6 +637,7 @@ function applyDatePreset(days) {
     // Apply filter
     currentStartDate = startDate;
     currentEndDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000 - 1); // End of day
+    currentDateFilterLabels = { from: startDateInput.value, to: endDateInput.value };
     
     applyFilters();
     updatePostCount();
@@ -931,8 +936,7 @@ function toISODate(date) {
 }
 
 function buildExportData() {
-    const posts = filteredPosts.map((post, index) => ({
-        index: index + 1,
+    const unsortedPosts = filteredPosts.map(post => ({
         id: String(post.id),
         url: post.id ? `https://x.com/i/status/${post.id}` : null,
         created_at: toISODateTime(post.created_at),
@@ -947,6 +951,12 @@ function buildExportData() {
         }
     }));
 
+    // The archive is mostly but not strictly chronological, so sort newest first
+    // (ISO strings sort lexically; posts without a date go last)
+    const posts = unsortedPosts
+        .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
+        .map((post, i) => ({ index: i + 1, ...post }));
+
     const dates = posts.map(p => p.created_at).filter(Boolean).sort();
 
     return {
@@ -956,13 +966,13 @@ function buildExportData() {
             exported_at: new Date().toISOString(),
             filters: {
                 search_query: currentSearchTerm || null,
-                date_from: toISODate(currentStartDate),
-                date_to: toISODate(currentEndDate)
+                date_from: currentDateFilterLabels.from,
+                date_to: currentDateFilterLabels.to
             },
             post_count: posts.length,
             total_posts_in_archive: allPosts.length,
             date_range: dates.length ? { earliest: dates[0], latest: dates[dates.length - 1] } : null,
-            order: 'Newest first, same order as displayed',
+            order: 'Newest first by created_at',
             field_notes: {
                 created_at: 'ISO 8601 local date and time as recorded in the source data; timezone not specified',
                 type: 'Tweet = original post, Reply = reply to another post, Retweet = repost of another post',
