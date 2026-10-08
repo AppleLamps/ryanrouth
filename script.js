@@ -424,9 +424,6 @@ async function loadPosts() {
         setupIntersectionObserver();
         loadMorePosts();
         
-        initializeSearch();
-        initializeDateFilter();
-        
     } catch (error) {
         console.error('Error loading posts:', error);
         showError(error.message);
@@ -725,7 +722,7 @@ function updatePostCount() {
     
     updateExportButton();
     
-    if (currentSearchTerm && count !== total) {
+    if (count !== total) {
         postCountElement.textContent = `${count} / ${total} posts`;
     } else {
         postCountElement.textContent = `${total} posts`;
