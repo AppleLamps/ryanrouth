@@ -153,6 +153,135 @@ body {
     line-height: 24px;
 }
 
+/* Export */
+.results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.export-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.export-button .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.export-button:hover:not(:disabled) {
+    background-color: var(--hover-bg);
+    border-color: var(--text-secondary);
+}
+
+.export-button:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.export-dialog {
+    border: none;
+    border-radius: var(--radius-xl);
+    padding: 0;
+    margin: auto;
+    width: min(400px, calc(100vw - 32px));
+    color: var(--text-primary);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-lg);
+}
+
+.export-dialog::backdrop {
+    background: rgba(15, 20, 25, 0.4);
+}
+
+.export-dialog-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.export-dialog-content h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.export-dialog-summary {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.export-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.export-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--secondary-color);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font: inherit;
+}
+
+.export-option:hover,
+.export-option:focus-visible {
+    border-color: var(--primary-color);
+    background: var(--card-bg);
+}
+
+.export-option .material-symbols-outlined {
+    color: var(--primary-color);
+}
+
+.export-option-label {
+    display: flex;
+    flex-direction: column;
+}
+
+.export-option-label small {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.export-cancel {
+    align-self: flex-end;
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: var(--radius-full);
+}
+
+.export-cancel:hover {
+    background-color: var(--hover-bg);
+}
+
 .search-input-wrapper {
     position: relative;
     display: flex;

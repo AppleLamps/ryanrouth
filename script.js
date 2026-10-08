@@ -718,6 +718,8 @@ function updatePostCount() {
     const count = filteredPosts.length;
     const total = allPosts.length;
     
+    updateExportButton();
+    
     if (currentSearchTerm && count !== total) {
         postCountElement.textContent = `${count} / ${total} posts`;
     } else {
@@ -856,6 +858,188 @@ function updateSearchPlaceholder() {
     }
 }
 
+// ===== EXPORT FUNCTIONALITY =====
+
+const exportButton = document.getElementById('export-button');
+const exportDialog = document.getElementById('export-dialog');
+const exportDialogSummary = document.getElementById('export-dialog-summary');
+
+const EXPORT_ACCOUNT = { name: 'Ryan Routh', handle: '@RyanRouth' };
+
+function initializeExport() {
+    if (!exportButton || !exportDialog) return;
+
+    exportButton.disabled = true;
+
+    exportButton.addEventListener('click', () => {
+        if (filteredPosts.length === 0) return;
+        const count = filteredPosts.length;
+        exportDialogSummary.textContent =
+            `${count} post${count === 1 ? '' : 's'} from the current results will be exported. Choose a format:`;
+        exportDialog.returnValue = '';
+        exportDialog.showModal();
+    });
+
+    // Close when clicking the backdrop
+    exportDialog.addEventListener('click', (e) => {
+        if (e.target === exportDialog) exportDialog.close('cancel');
+    });
+
+    exportDialog.addEventListener('close', () => {
+        const format = exportDialog.returnValue;
+        if (format === 'txt' || format === 'json') {
+            exportPosts(format);
+        }
+    });
+}
+
+function updateExportButton() {
+    if (exportButton) exportButton.disabled = filteredPosts.length === 0;
+}
+
+// Decode the few HTML entities present in the source text
+function decodeEntities(text) {
+    return text
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, '&');
+}
+
+// Convert "M/D/YYYY h:mm:ss AM" to "YYYY-MM-DDTHH:MM:SS" (no timezone, the source data has none)
+function toISODateTime(dateString) {
+    const match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?$/i.exec(dateString || '');
+    if (!match) return null;
+
+    const [, month, day, year, rawHour = '0', minute = '00', second = '00', meridiem] = match;
+    let hour = parseInt(rawHour, 10);
+    if (meridiem) {
+        const isPM = meridiem.toUpperCase() === 'PM';
+        if (hour === 12) hour = isPM ? 12 : 0;
+        else if (isPM) hour += 12;
+    }
+
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${minute}:${second}`;
+}
+
+function toISODate(date) {
+    if (!date) return null;
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function buildExportData() {
+    const posts = filteredPosts.map((post, index) => ({
+        index: index + 1,
+        id: String(post.id),
+        url: post.id ? `https://x.com/i/status/${post.id}` : null,
+        created_at: toISODateTime(post.created_at),
+        type: post.type,
+        text: decodeEntities(post.text.trim()),
+        metrics: {
+            views: post.views,
+            favorites: post.favorites,
+            reposts: post.reposts,
+            replies: post.replies,
+            bookmarks: post.bookmarks
+        }
+    }));
+
+    const dates = posts.map(p => p.created_at).filter(Boolean).sort();
+
+    return {
+        metadata: {
+            description: `Posts by ${EXPORT_ACCOUNT.name} (${EXPORT_ACCOUNT.handle} on X/Twitter), exported from the filtered results of a post archive viewer.`,
+            account: EXPORT_ACCOUNT,
+            exported_at: new Date().toISOString(),
+            filters: {
+                search_query: currentSearchTerm || null,
+                date_from: toISODate(currentStartDate),
+                date_to: toISODate(currentEndDate)
+            },
+            post_count: posts.length,
+            total_posts_in_archive: allPosts.length,
+            date_range: dates.length ? { earliest: dates[0], latest: dates[dates.length - 1] } : null,
+            order: 'Newest first, same order as displayed',
+            field_notes: {
+                created_at: 'ISO 8601 local date and time as recorded in the source data; timezone not specified',
+                type: 'Tweet = original post, Reply = reply to another post, Retweet = repost of another post',
+                text: 'Verbatim post text; @mentions at the start of a reply indicate who was being replied to',
+                metrics: 'Engagement counts at the time the archive was collected'
+            }
+        },
+        posts
+    };
+}
+
+function formatExportAsText(data) {
+    const { metadata, posts } = data;
+    const { filters } = metadata;
+    const lines = [];
+
+    lines.push(`POSTS BY ${metadata.account.name.toUpperCase()} (${metadata.account.handle} on X/Twitter)`);
+    lines.push('');
+    lines.push('== EXPORT INFO ==');
+    lines.push(`Exported at: ${metadata.exported_at}`);
+    lines.push(`Posts in this export: ${metadata.post_count} (of ${metadata.total_posts_in_archive} in the full archive)`);
+    lines.push(`Search query: ${filters.search_query ? `"${filters.search_query}"` : 'none'}`);
+    lines.push(`Date filter: ${filters.date_from || filters.date_to ? `${filters.date_from || 'any'} to ${filters.date_to || 'any'}` : 'none'}`);
+    if (metadata.date_range) {
+        lines.push(`Date range of posts: ${metadata.date_range.earliest} to ${metadata.date_range.latest}`);
+    }
+    lines.push(`Order: ${metadata.order}`);
+    lines.push('');
+    lines.push('== FIELD NOTES ==');
+    Object.entries(metadata.field_notes).forEach(([field, note]) => {
+        lines.push(`- ${field}: ${note}`);
+    });
+    lines.push('');
+    lines.push('== POSTS ==');
+
+    posts.forEach(post => {
+        const m = post.metrics;
+        lines.push('');
+        lines.push(`--- POST ${post.index} of ${posts.length} ---`);
+        lines.push(`id: ${post.id}`);
+        lines.push(`created_at: ${post.created_at || 'unknown'}`);
+        lines.push(`type: ${post.type}`);
+        lines.push(`url: ${post.url || 'unknown'}`);
+        lines.push(`metrics: views=${m.views}, favorites=${m.favorites}, reposts=${m.reposts}, replies=${m.replies}, bookmarks=${m.bookmarks}`);
+        lines.push('text:');
+        lines.push(post.text);
+        lines.push(`--- END POST ${post.index} ---`);
+    });
+
+    lines.push('');
+    lines.push('== END OF EXPORT ==');
+    return lines.join('\n') + '\n';
+}
+
+function exportPosts(format) {
+    if (filteredPosts.length === 0) return;
+
+    const data = buildExportData();
+    const isFiltered = !!(currentSearchTerm || currentStartDate || currentEndDate);
+    const filename = `ryan-routh-posts${isFiltered ? '-filtered' : ''}-${toISODate(new Date())}.${format}`;
+
+    const content = format === 'json'
+        ? JSON.stringify(data, null, 2) + '\n'
+        : formatExportAsText(data);
+    const mimeType = format === 'json' ? 'application/json' : 'text/plain';
+
+    const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 // Initialize the application
 function init() {
     addSmoothScrolling();
@@ -865,6 +1049,7 @@ function init() {
     updateSearchPlaceholder();
     initializeTabSwitching();
     initializeDonorDatabase();
+    initializeExport();
     
     // Update placeholder on window resize
     window.addEventListener('resize', updateSearchPlaceholder);

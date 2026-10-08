@@ -51,7 +51,13 @@
         <div class="tab-content" id="posts-tab" style="display: block;">
             <div class="search-section" id="search-section">
                 <div class="search-container">
-                    <div id="post-count" class="post-count"></div>
+                    <div class="results-header">
+                        <div id="post-count" class="post-count"></div>
+                        <button id="export-button" class="export-button" type="button" title="Export the posts currently shown">
+                            <span class="material-symbols-outlined">download</span>
+                            <span>Export</span>
+                        </button>
+                    </div>
                     <div class="search-input-wrapper">
                         <span class="material-symbols-outlined search-icon">search</span>
                         <input type="text" id="search-input" class="search-input" placeholder="Search posts (try: 'rent freeze', 'childcare', 'buses')..." />
@@ -132,6 +138,24 @@
         </div>
 
     </main>
+
+    <dialog id="export-dialog" class="export-dialog" aria-labelledby="export-dialog-title">
+        <form method="dialog" class="export-dialog-content">
+            <h3 id="export-dialog-title">Export posts</h3>
+            <p id="export-dialog-summary" class="export-dialog-summary"></p>
+            <div class="export-options">
+                <button type="submit" value="txt" class="export-option">
+                    <span class="material-symbols-outlined">description</span>
+                    <span class="export-option-label"><strong>.txt</strong><small>Plain text, one labeled block per post</small></span>
+                </button>
+                <button type="submit" value="json" class="export-option">
+                    <span class="material-symbols-outlined">data_object</span>
+                    <span class="export-option-label"><strong>.json</strong><small>Structured data with metadata</small></span>
+                </button>
+            </div>
+            <button type="submit" value="cancel" class="export-cancel">Cancel</button>
+        </form>
+    </dialog>
 
     <footer class="footer">
         <p>&copy; 2024 Ryan Routh's Social Media Posts. Designed with ♥</p>
